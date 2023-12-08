@@ -12,8 +12,7 @@ from telebot import types
 load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-bot = telebot.TeleBot(f'{}')  # Insert Bot Token here
-
+bot = telebot.TeleBot(f'{BOT_TOKEN}')  # Insert Bot Token here
 logging.basicConfig(filename='../logs/logs.log', encoding='utf-8', level=logging.INFO)
 
 # Global variables to remember user choice
@@ -114,12 +113,17 @@ def find_buildings_year(message):
         if building_year > max_year:
             max_year = building_year
 
+    if years:
+        median_value = int(statistics.median(years))
+    else:
+        median_value = 0
+
     if lan == "UA":
         send_text = f'Будівлі в цьому районі датуються {min_year}-{max_year} роками. ' \
-                    f'Середній (медіана) рік будівлі - {int(statistics.median(years))}\n\n' + send_text
+                    f'Середній (медіана) рік будівлі - {(median_value if median_value else "невідомий")}.\n\n' + send_text
     if lan == "ENG":
         send_text = f'The buildings in this area date back to {min_year}-{max_year}. ' \
-                    f'Median year is {int(statistics.median(years))}\n\n' + send_text
+                    f'Median year is {(median_value if median_value else "is unknown")}.\n\n' + send_text
 
     inline_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     if lan == "UA":
