@@ -5,16 +5,19 @@ import math
 import overpy
 import logging
 import telebot
+import os
+from dotenv import load_dotenv
 from telebot import types
-from telegram_token import get_token  # Script that returns Bot Token valuea
 
-bot = telebot.TeleBot(f'{get_token()}')  # Insert Bot Token here
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+
+bot = telebot.TeleBot(f'{}')  # Insert Bot Token here
 
 logging.basicConfig(filename='../logs/logs.log', encoding='utf-8', level=logging.INFO)
 
 # Global variables to remember user choice
 lan = 'UA'
-
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
@@ -159,9 +162,9 @@ def find_distance(user_coords: list, obj_coords: list):
     # print(result)
     # return result
 
-
     result = math.sqrt(abs(decimal.Decimal(user_coords[0]) - obj_coords[0]) ** 2 + abs(decimal.Decimal(user_coords[1]) - obj_coords[1]) ** 2)
     return math.floor(result * 111139)
 
 
+print("Polling bot...")
 bot.infinity_polling(timeout=10, long_polling_timeout=5)
