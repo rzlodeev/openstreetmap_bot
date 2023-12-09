@@ -16,11 +16,11 @@ bot = telebot.TeleBot(f'{BOT_TOKEN}')  # Insert Bot Token here
 <<<<<<< HEAD
 =======
 
->>>>>>> 2fa8eb6dc97bfac62deb20e8677d27ef60885308
 logging.basicConfig(filename='../logs/logs.log', encoding='utf-8', level=logging.INFO)
 
 # Global variables to remember user choice
 lan = 'UA'
+
 
 @bot.message_handler(commands=["start"])
 def start_command(message):
@@ -74,52 +74,73 @@ def find_buildings_year(message):
 
     buildings_unsorted = []  # List to store requested data
 
-    for way in result.ways:  # Storing result data in buildings dict
-        if way.tags.get('start_date'):  # If requested building has info about built year
-            buildings_unsorted.append(way.tags | {  # Add coordinates of center
-                'coords': [way.center_lat, way.center_lon]
-            })
+    if result.ways:
+        for way in result.ways:  # Storing result data in buildings dict
+            if way.tags.get('start_date'):  # If requested building has info about built year
+                buildings_unsorted.append(way.tags | {  # Add coordinates of center
+                    'coords': [way.center_lat, way.center_lon]
+                })
 
-    min_year = 0  # Variables to store min and max built year value
-    max_year = 0
-    years = []  # List with years of all buildings to find median
+        min_year = 0  # Variables to store min and max built year value
+        max_year = 0
+        years = []  # List with years of all buildings to find median
 
-    send_text = ''  # Text to send in message
+        send_text = ''  # Text to send in message
 
-    for building in buildings_unsorted:  # Iterate through buildings to calculate and add distance to user value
-        distance = find_distance(user_coords, building.get('coords'))
-        building.update({'distance': distance})
+        for building in buildings_unsorted:  # Iterate through buildings to calculate and add distance to user value
+            distance = find_distance(user_coords, building.get('coords'))
+            building.update({'distance': distance})
 
-    buildings = sorted(buildings_unsorted, key=lambda d: d['distance'])
+        buildings = sorted(buildings_unsorted, key=lambda d: d['distance'])
 
-    for building in buildings:  # Iterate through builndigs to read data and add it to send_text
-        building_year = int(building.get('start_date'))
-        years.append(building_year)
+        for building in buildings:  # Iterate through builndigs to read data and add it to send_text
+            building_year = int(building.get('start_date'))
+            years.append(building_year)
 
-        if building == buildings[0]:  # Set min and max year as year of first building in list
-            min_year = building_year
-            max_year = min_year
+            if building == buildings[0]:  # Set min and max year as year of first building in list
+                min_year = building_year
+                max_year = min_year
 
-        global lan
+            global lan
+            if lan == "UA":
+                # Add info to text. Levels are added if they exist.
+                send_text += f"📍{building.get('distance')}m " \
+                             f"{building.get('addr:street', 'з невідомою адресою')} " \
+                             f"{building.get('addr:housenumber')}: {building_year} рік" \
+                             f"{(', ' + building.get('building:levels') + ' поверхів;' if building.get('building:levels') else ';')}\n"
+            if lan == "ENG":
+                # Add info to text. Levels are added if they exist.
+                send_text += f"Building {building.get('addr:street', 'with unknown address')} " \
+                             f"{building.get('addr:housenumber')}: year {building_year}" \
+                             f"{(', ' + building.get('building:levels') + ' levels;' if building.get('building:levels') else ';')}\n"
+            if building_year < min_year:  # Updating min and max years
+                min_year = building_year
+            if building_year > max_year:
+                max_year = building_year
+
+        if years:
+            median_value = int(statistics.median(years))
+        else:
+            median_value = 0
+
         if lan == "UA":
-            # Add info to text. Levels are added if they exist.
-            send_text += f"📍{building.get('distance')}m " \
-                         f"{building.get('addr:street', 'з невідомою адресою')} " \
-                         f"{building.get('addr:housenumber')}: {building_year} рік" \
-                         f"{(', ' + building.get('building:levels') + ' поверхів;' if building.get('building:levels') else ';')}\n"
+            send_text = f'Будівлі в цьому районі датуються {min_year}-{max_year} роками. ' \
+                        f'Середній (медіана) рік будівлі - {(median_value if median_value else "невідомий")}\n\n' + send_text
         if lan == "ENG":
-            # Add info to text. Levels are added if they exist.
-            send_text += f"Building {building.get('addr:street', 'with unknown address')} " \
-                         f"{building.get('addr:housenumber')}: year {building_year}" \
-                         f"{(', ' + building.get('building:levels') + ' levels;' if building.get('building:levels') else ';')}\n"
-        if building_year < min_year:  # Updating min and max years
-            min_year = building_year
-        if building_year > max_year:
-            max_year = building_year
+            send_text = f'The buildings in this area date back to {min_year}-{max_year}. ' \
+                        f'Median year is {(median_value if median_value else "is unknown")}\n\n' + send_text
 
-    if years:
-        median_value = int(statistics.median(years))
+        inline_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        if lan == "UA":
+            my_geo_button = types.KeyboardButton("Надіслати моє місцезнаходження", request_location=True)
+        else:
+            my_geo_button = types.KeyboardButton("Send my current location", request_location=True)
+        inline_markup.add(my_geo_button)
+
+        bot.send_message(message.chat.id, text=send_text, reply_markup=inline_markup)
+
     else:
+<<<<<<< HEAD
         median_value = 0
 
     if lan == "UA":
@@ -144,6 +165,12 @@ def find_buildings_year(message):
     inline_markup.add(my_geo_button)
 
     bot.send_message(message.chat.id, text=send_text, reply_markup=inline_markup)
+=======
+        if lan == 'UA':
+            bot.send_message(message.chat.id, 'Не знайдено будівель у цьому районі. Спробуй іншу локацію!')
+        else:
+            bot.send_message(message.chat.id, 'Не знайдено будівель у цьому районі. Спробуй іншу локацію!')
+>>>>>>> 15db901744791328c4750dea0d5c305d80b4aa3e
 
 
 # Takes coordinates and returns query-ready string of square box coordinates with mentioned size
