@@ -13,6 +13,10 @@ load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 bot = telebot.TeleBot(f'{BOT_TOKEN}')  # Insert Bot Token here
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2fa8eb6dc97bfac62deb20e8677d27ef60885308
 logging.basicConfig(filename='../logs/logs.log', encoding='utf-8', level=logging.INFO)
 
 # Global variables to remember user choice
@@ -120,10 +124,17 @@ def find_buildings_year(message):
 
     if lan == "UA":
         send_text = f'Будівлі в цьому районі датуються {min_year}-{max_year} роками. ' \
+<<<<<<< HEAD
                     f'Середній (медіана) рік будівлі - {(median_value if median_value else "невідомий")}.\n\n' + send_text
     if lan == "ENG":
         send_text = f'The buildings in this area date back to {min_year}-{max_year}. ' \
                     f'Median year is {(median_value if median_value else "is unknown")}.\n\n' + send_text
+=======
+                    f'Середній (медіана) рік будівлі - {(median_value if median_value else "невідомий")}\n\n' + send_text
+    if lan == "ENG":
+        send_text = f'The buildings in this area date back to {min_year}-{max_year}. ' \
+                    f'Median year is {(median_value if median_value else "is unknown")}\n\n' + send_text
+>>>>>>> 2fa8eb6dc97bfac62deb20e8677d27ef60885308
 
     inline_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     if lan == "UA":
