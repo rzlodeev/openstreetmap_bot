@@ -10,9 +10,11 @@ from dotenv import load_dotenv
 from telebot import types
 
 load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
 
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 bot = telebot.TeleBot(f'{BOT_TOKEN}')  # Insert Bot Token here
+
+LOGS_PWD = os.getenv('LOGS_PWD')  # Custom password for checking logs from bot
 
 logging.basicConfig(filename='../logs/logs.log', encoding='utf-8', level=logging.INFO)
 
@@ -29,6 +31,19 @@ def start_command(message):
     bot.send_message(message.chat.id, "Hi! Please choose a language:", reply_markup=reply_markup)
     bot.register_next_step_handler(message, choose_language)
 
+
+@bot.message_handler(commands=['logs'])
+def logs_command(message):
+    bot.send_message(message.chat.id, 'pswd:')
+    bot.register_next_step_handler(message, send_logs)
+
+
+def send_logs(message):
+    if message.text == f'{LOGS_PWD}':
+        log_file = open('../logs/logs.log', 'rb')
+        bot.send_document(message.chat.id, document=log_file)
+    else:
+        bot.send_message(message.chat.id, 'wrong pswd')
 
 def choose_language(message):
     global lan
