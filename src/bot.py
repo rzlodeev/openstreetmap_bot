@@ -1,5 +1,4 @@
 import decimal
-import pprint
 import statistics
 import math
 import overpy
@@ -44,6 +43,7 @@ def send_logs(message):
         bot.send_document(message.chat.id, document=log_file)
     else:
         bot.send_message(message.chat.id, 'wrong pswd')
+
 
 def choose_language(message):
     global lan
@@ -90,9 +90,10 @@ def find_buildings_year(message):
     if result.ways:
         for way in result.ways:  # Storing result data in buildings dict
             if way.tags.get('start_date'):  # If requested building has info about built year
-                buildings_unsorted.append(way.tags | {  # Add coordinates of center
-                    'coords': [way.center_lat, way.center_lon]
-                })
+                if len(buildings_unsorted) <= 10:
+                    buildings_unsorted.append(way.tags | {  # Add coordinates of center
+                        'coords': [way.center_lat, way.center_lon]
+                    })
 
         min_year = 0  # Variables to store min and max built year value
         max_year = 0
@@ -156,7 +157,7 @@ def find_buildings_year(message):
         if lan == 'UA':
             bot.send_message(message.chat.id, 'Не знайдено будівель у цьому районі. Спробуй іншу локацію!')
         else:
-            bot.send_message(message.chat.id, 'Не знайдено будівель у цьому районі. Спробуй іншу локацію!')
+            bot.send_message(message.chat.id, 'Can\'t find buildings in this area. Try different location!')
 
 
 # Takes coordinates and returns query-ready string of square box coordinates with mentioned size
